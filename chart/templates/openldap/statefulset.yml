@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: openldap
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  serviceName: openldap
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: openldap
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: openldap
+    spec:
+      terminationGracePeriodSeconds: 10
+      initContainers:
+      - name: take-data-dir-ownership
+        image: alpine:latest
+        command:
+        - chown
+        - -R
+        - 1001:1001
+        - /bitnami/openldap/data
+        volumeMounts:
+          - name: data
+            mountPath: /bitnami/openldap/data
+      containers:
+        - name: openldap
+          image: docker.io/bitnami/openldap:2.5.9
+          imagePullPolicy: "Always"
+          env:
+            - name: LDAP_ROOT
+              value: "{{ include "ldap.dc" . }}"
+            - name: LDAP_ADMIN_USERNAME
+              value: "admin"
+            - name: LDAP_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: password-password-ldap-admin-from-tenant-exphost-services
+                  key: password
+            - name: LDAP_CUSTOM_LDIF_DIR
+              value: "/ldifs"
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/openldap/
+            - name: ldifs
+              mountPath: /ldifs/
+          ports:
+            - name: tcp-ldap
+              containerPort: 1389
+      volumes:
+        - name: ldifs
+          configMap:
+            name: ldap-ldifs
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 2Gi

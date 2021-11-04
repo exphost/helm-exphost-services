@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: redmine
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+    - kopf.zalando.org/KopfFinalizerMarker
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: tenant-exphost-services
+  source:
+    repoURL: 'https://charts.bitnami.com/bitnami'
+    targetRevision: 17.0.12
+    chart: redmine
+    helm:
+      values: |
+        service:
+          type: ClusterIP
+        ingress:
+          enabled: true
+          hostname: redmine.{{ .Values.domain }}
+          annotations:
+            cert-manager.io/cluster-issuer: acme-issuer
+          tls: true
+        postgresql:
+          enabled: false
+        redmineEmail: redmine-admin@fabrykowski.pl
+        redmineUsername: admin
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: tenant-exphost-services
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - PruneLast=true
+      - CreateNamespace=true

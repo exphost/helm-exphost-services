@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gitlab-providers-dex
+type: Opaque
+stringData:
+  provider: |
+    name: openid_connect
+    label: dex_label
+    args:
+      name: exphost
+      scope: [openid,profile,email,groups]
+      response_type: code
+      issuer: https://auth.{{ .Values.domain}}/dex
+      discovery: true
+      client_auth_method: query
+      send_scope_to_token_endpoint: false
+      uid_field: preferred_username
+      client_options:
+        identifier: gitlab
+        secret: 7t7qSU17QwzP80s5NYqV4/JTKl8XYyQ+iyrMpslteXo=
+        redirect_uri: https://gitlab.{{ .Values.domain}}/users/auth/exphost/callback
+      attribute_statements:
+        nickname: ['username']

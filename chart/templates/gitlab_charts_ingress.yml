@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: acme-issuer
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /api/v4/projects/6/packages/helm/stable/$1
+  name  : gitlab-charts-repo
+  namespace: tenant-exphost-services
+spec:
+  rules:
+  - host: {{ .Values.domain }}
+    http:
+      paths:
+      - path: /charts/(.*)
+        backend:
+          service:
+            name: tenant-exphost-services-gitlab-webservice-default
+            port:
+              number: 8181
+        pathType: Prefix
+  tls:
+  - hosts:
+    - {{ .Values.domain }}
+    secretName: moj-gitlab-tls

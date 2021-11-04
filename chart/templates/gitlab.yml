@@ -1,0 +1,83 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitlab
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+    - kopf.zalando.org/KopfFinalizerMarker
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: tenant-exphost-services
+  source:
+    repoURL: 'https://charts.gitlab.io/'
+    targetRevision: 5.4.0
+    chart: gitlab
+    helm:
+      values: |
+        certmanager:
+          installCRDs: false
+          install: false
+        prometheus:
+          install: false
+        certmanager-issuer:
+          email: gitlab_certmanager@fabrykowski.pl
+        global:
+          hosts:
+            domain: gitlab.{{ .Values.domain }}
+            gitlab:
+              name: gitlab.{{ .Values.domain }}
+          ingress:
+            class: nginx
+            configureCertmanager: false
+            annotations:
+              "cert-manager.io/cluster-issuer": acme-issuer
+          appConfig:
+            omniauth:
+              enabled: true
+              allowSingleSignOn: true
+              autoLinkUser: true
+              providers:
+                - secret: gitlab-providers-dex
+                  key: provider
+
+        gitlab:
+          webservice:
+            ingress:
+              tls:
+                secretName: moj-gitlab-tls
+          gitaly:
+            persistence:
+              size: 30G
+          gitlab-shell:
+            service:
+              type: LoadBalancer
+              annotations:
+                metallb.universe.tf/allow-shared-ip: ingress-ip
+        registry:
+          ingress:
+            tls:
+              secretName: moj-registry-tls
+        minio:
+          ingress:
+            tls:
+              secretName: moj-minio-tls
+        #gitlab-runner:
+        #  runners:
+        #    config: |
+        #      [[runners]]
+        #        [runners.kubernetes]
+        #        image = "ubuntu:18.04"
+        #        helper_image = "registry.gitlab.com/gitlab-org/ci-cd/gitlab-runner-ubi-images/gitlab-runner-helper:x86_64-fcbb560f"
+
+        nginx-ingress:
+          enabled: false
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: tenant-exphost-services
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - PruneLast=true
+      - CreateNamespace=true

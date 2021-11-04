@@ -1,0 +1,52 @@
+apiVersion: exphost.pl/v1
+kind: Password
+metadata:
+  name: password-dex
+spec:
+  copy_namespaces:
+  - dex
+  name: password-dex
+  types:
+    - sha512
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-ldap-user-dex
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: ldap
+        image: bitnami/openldap:2.5
+        command:
+          - /bin/bash
+          - -c
+          - 'echo -e "
+dn: uid=dex,ou=sa,{{ include "ldap.dc" . }}\n
+changetype: add\n
+uid: dex\n
+objectClass: account\n
+objectClass: simpleSecurityObject\n
+userPassword:: $(echo -n {crypt}$PASSWORD|base64 -w0)
+"|sed -e "s/^ //" >/tmp/dex.ldif
+            ;
+            echo "qweqwe";
+            cat /tmp/dex.ldif;
+            ldapmodify -a -x -H ldap://openldap -D cn=admin,{{ include "ldap.dc" . }} -w $ADMINPASSWORD -f /tmp/dex.ldif;
+            echo $?
+            '
+        env:
+          - name: PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: password-password-dex-from-tenant-exphost-services
+                key: sha512
+          - name: ADMINPASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: password-password-ldap-admin-from-tenant-exphost-services
+                key: password
