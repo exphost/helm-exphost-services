@@ -1,0 +1,6 @@
+apiVersion: v2
+name: exphost-services
+description: A Helm chart for Kubernetes
+
+type: application
+version: __VERSION__

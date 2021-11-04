@@ -1,0 +1,3 @@
+---
+include:
+  - https://gitlab.exphost.pl/exphost/exphost-helms/-/raw/master/common/gitlab-ci.yml
