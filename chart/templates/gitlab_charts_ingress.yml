@@ -9,7 +9,7 @@ metadata:
   namespace: tenant-exphost-services
 spec:
   rules:
-  - host: {{ .Values.domain }}
+  - host: gitlab.{{ .Values.domain }}
     http:
       paths:
       - path: /charts/(.*)
@@ -21,5 +21,5 @@ spec:
         pathType: Prefix
   tls:
   - hosts:
-    - {{ .Values.domain }}
+    - gitlab.{{ .Values.domain }}
     secretName: moj-gitlab-tls
