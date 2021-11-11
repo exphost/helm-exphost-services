@@ -62,6 +62,13 @@ spec:
           ingress:
             tls:
               secretName: moj-minio-tls
+        gitlab-runner:
+          runners:
+            config: |
+              [[runners]]
+                [runners.kubernetes]
+                  image = "ubuntu:20.04"
+                  privileged = true
         #gitlab-runner:
         #  runners:
         #    config: |
