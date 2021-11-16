@@ -27,6 +27,11 @@ spec:
           enabled: false
         redmineEmail: redmine-admin@fabrykowski.pl
         redmineUsername: admin
+        existingSecret: redmine-secrets
+        mariadb:
+          auth:
+            existingSecret: redmine-secrets
+          existingSecret: redmine-secrets
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: tenant-exphost-services
