@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postfix
+  namespace: tenant-exphost-services
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+    - kopf.zalando.org/KopfFinalizerMarker
+spec:
+  project: tenant-exphost-services
+  source:
+    repoURL: 'https://gitlab.exphost.pl/charts'
+    targetRevision: {{ .Values.postfix.version }}
+    chart: postfix
+    helm:
+      values: |
+        {{- tpl (toYaml .Values.postfix) . | nindent 8 }}
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: tenant-exphost-services
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+

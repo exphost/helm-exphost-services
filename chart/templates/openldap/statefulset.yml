@@ -43,6 +43,13 @@ spec:
                   key: password
             - name: LDAP_CUSTOM_LDIF_DIR
               value: "/ldifs"
+            - name: LDAP_CONFIG_ADMIN_ENABLED
+              value: "yes"
+            - name: LDAP_CONFIG_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: password-password-ldap-admin-from-tenant-exphost-services
+                  key: password
           volumeMounts:
             - name: data
               mountPath: /bitnami/openldap/

@@ -1,0 +1,50 @@
+apiVersion: exphost.pl/v1
+kind: Password
+metadata:
+  name: password-postfix
+spec:
+  name: password-postfix
+  types:
+    - sha512
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-ldap-user-postfix
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: ldap
+        image: bitnami/openldap:2.5
+        command:
+          - /bin/bash
+          - -c
+          - 'echo -e "
+dn: uid=postfix,ou=sa,{{ include "ldap.dc" . }}\n
+changetype: add\n
+uid: postfix\n
+objectClass: account\n
+objectClass: simpleSecurityObject\n
+userPassword:: $(echo -n {crypt}$PASSWORD|base64 -w0)
+"|sed -e "s/^ //" >/tmp/postfix.ldif
+            ;
+            echo "qweqwe";
+            cat /tmp/postfix.ldif;
+            ldapmodify -a -x -H ldap://openldap -D cn=admin,{{ include "ldap.dc" . }} -w $ADMINPASSWORD -f /tmp/postfix.ldif;
+            echo $?
+            '
+        env:
+          - name: PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: password-password-postfix-from-tenant-exphost-services
+                key: sha512
+          - name: ADMINPASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: password-password-ldap-admin-from-tenant-exphost-services
+                key: password

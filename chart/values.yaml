@@ -1,2 +1,4 @@
 ## Domain for services
 domain: example.com
+postfix:
+  version: v0.1.1
