@@ -24,6 +24,10 @@ data:
     objectClass: organizationalUnit
     ou: sa
 
+    dn: ou=mails,{{ include "ldap.dc" . }}
+    objectClass: organizationalUnit
+    ou: mails
+
     # groups
     dn: cn=k8s-admins,ou=groups,{{ include "ldap.dc" . }}
     objectClass: groupOfNames
