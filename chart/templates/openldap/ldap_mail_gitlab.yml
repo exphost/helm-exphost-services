@@ -1,0 +1,54 @@
+apiVersion: exphost.pl/v1
+kind: Password
+metadata:
+  name: password-mail-gitlab
+spec:
+  name: password-mail-gitlab
+  types:
+    - sha512
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-ldap-mail-gitlab
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: ldap
+        image: bitnami/openldap:2.5
+        command:
+          - /bin/bash
+          - -c
+          - 'echo -e "
+dn: maildrop=gitlab@{{ .Values.domain }},ou=mails,{{ include "ldap.dc" . }}\n
+changetype: add\n
+maildrop: gitlab@{{ .Values.domain }}\n
+objectClass: person\n
+objectClass: postfixUser\n
+objectClass: top\n
+cn: gitlab\n
+sn: mail\n
+mailacceptinggeneralid: gitlab@{{ .Values.domain }}\n
+userPassword:: $(echo -n {crypt}$PASSWORD|base64 -w0)
+"|sed -e "s/^ //" >/tmp/ldif.ldif
+            ;
+            echo "qweqwe";
+            cat /tmp/ldif.ldif;
+            ldapmodify -a -x -H ldap://openldap -D cn=admin,{{ include "ldap.dc" . }} -w $ADMINPASSWORD -f /tmp/ldif.ldif;
+            echo $?
+            '
+        env:
+          - name: PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: password-password-mail-gitlab-from-tenant-exphost-services
+                key: sha512
+          - name: ADMINPASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: password-password-ldap-admin-from-tenant-exphost-services
+                key: password

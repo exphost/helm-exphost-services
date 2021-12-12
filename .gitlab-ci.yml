@@ -17,3 +17,4 @@ deploy-to-dev:
     repo: git@gitlab.exphost.pl:exphost/tenant-exphost-services-home-lab.git
     yamlfile: exphost-services.yml
     waitapp: tenant-exphost-services-exphost-services
+    refreshapp: tenant-exphost-services

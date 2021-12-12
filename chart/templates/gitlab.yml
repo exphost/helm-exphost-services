@@ -40,6 +40,30 @@ spec:
               providers:
                 - secret: gitlab-providers-dex
                   key: provider
+            incomingEmail:
+              enabled: true
+              address: gitlab@{{ .Values.domain }}
+              host: imap.{{ .Values.domain }}
+              port: 143
+              ssl: false
+              startTls: true
+              user: gitlab@{{ .Values.domain }}
+              password:
+                secret: password-password-mail-gitlab-from-tenant-exphost-services
+                key: password
+              
+          smtp:
+            enabled: true
+            address: smtp.{{ .Values.domain }}
+            port: 587
+            user_name: gitlab@{{ .Values.domain }}
+            password:
+              secret: password-password-mail-gitlab-from-tenant-exphost-services
+              key: password
+            starttls_auto: true
+            authentication: "login"
+          email:
+            from: gitlab@{{ .Values.domain }}
 
         gitlab:
           webservice:
