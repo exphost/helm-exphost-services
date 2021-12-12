@@ -1,7 +1,6 @@
 ---
 include:
   - https://gitlab.exphost.pl/exphost/exphost-helms/-/raw/master/common/gitlab-ci.yml
-  - https://gitlab.exphost.pl/exphost/exphost-helms/-/raw/master/common/git.yml
 
 stages:
   - checks
@@ -11,9 +10,10 @@ stages:
 deploy-to-dev:
   stage: deploy
   image: alpine
-  extends: .deploy-to-git
+  extends: .deploy-to-git-mainapp
   environment:
     name: dev
   variables:
     repo: git@gitlab.exphost.pl:exphost/tenant-exphost-services-home-lab.git
-    patch_cmd: 'yq e -i ".spec.source.targetRevision=\"$$VERSION\"" exphost-services.yml'
+    yamlfile: exphost-services.yml
+    waitapp: tenant-exphost-services-exphost-services
