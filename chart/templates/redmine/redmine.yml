@@ -25,13 +25,18 @@ spec:
           tls: true
         postgresql:
           enabled: false
-        redmineEmail: redmine-admin@fabrykowski.pl
         redmineUsername: admin
         existingSecret: redmine-secrets
         mariadb:
           auth:
             existingSecret: redmine-secrets
           existingSecret: redmine-secrets
+        redmineEmail: redmine@{{ .Values.domain }}
+        smtpHost: smtp.{{ .Values.domain }}
+        smtpPort: 587
+        smtpUser: redmine@{{ .Values.domain }}
+        smtpProtocol: "tls"
+        extraEnvVarsSecret: redmine-mail-password
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: tenant-exphost-services
