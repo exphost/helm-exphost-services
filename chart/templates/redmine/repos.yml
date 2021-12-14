@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redmine-repos-configs
+  namespace: tenant-exphost-services
+data:
+  repos: |
+    {{- tpl (toYaml .Values.redmine.repos) . | nindent 4 }}
+{{- if .Values.redmine.ws }}
+  ws: {{ .Values.redmine.ws }}
+{{- end }}
