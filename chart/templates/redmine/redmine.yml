@@ -37,6 +37,41 @@ spec:
         smtpUser: redmine@{{ .Values.domain }}
         smtpProtocol: "tls"
         extraEnvVarsSecret: redmine-mail-password
+        initContainers:
+          - name: generate-ssh-key
+            image: alpine
+            command: ['sh', '-c', 'mkdir /bitnami/redmine/repos; apk add openssh-keygen; [ -e /bitnami/redmine/repos/key ] && echo "key exists" || ssh-keygen -N "" -t rsa -f /bitnami/redmine/repos/key && cat /bitnami/redmine/repos/key.pub']
+            volumeMounts:
+              - mountPath: /bitnami/redmine
+                name: redmine-data
+        sidecars:
+          - name: git-updater
+            image: alpine
+            command:
+              - sh
+              - -c
+              - "apk add jq yq git openssh-client curl;
+                cd /bitnami/redmine/repos;
+                export GIT_SSH_COMMAND='ssh -i /bitnami/redmine/repos/key -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null';
+                while true; do
+                  cat /configmaps/repos;
+                  yq e -o=json  /configmaps/repos |jq -r '.[] | [.name, .repo] | @tsv' > /tmp/repos.txt;
+                  while IFS=$'\t' read -r name repo _; do
+                    echo processing \"$repo\" \"$name\";
+                    [ -d $name ] && (echo 'found. updating'; cd \"$name\"; git fetch)||(echo 'not found. clonning'; git clone --bare \"$repo\" \"$name\")
+                  done </tmp/repos.txt;
+                  [ -e /configmaps/ws ] && curl localhost:3000/sys/fetch_changesets?key=$(cat /configmaps/ws);
+                  sleep 60;
+                done"
+            volumeMounts:
+              - mountPath: /bitnami/redmine
+                name: redmine-data
+              - mountPath: /configmaps
+                name: repo-configs
+        extraVolumes:
+          - name: repo-configs
+            configMap:
+              name: redmine-repos-configs
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: tenant-exphost-services
