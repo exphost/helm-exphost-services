@@ -1,6 +1,6 @@
 ## Domain for services
 domain: example.com
 postfix:
-  version: v0.3.0
+  version: v0.3.1
 dovecot:
   version: v0.3.0
