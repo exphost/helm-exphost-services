@@ -58,7 +58,7 @@ spec:
                   yq e -o=json  /configmaps/repos |jq -r '.[] | [.name, .repo] | @tsv' > /tmp/repos.txt;
                   while IFS=$'\t' read -r name repo _; do
                     echo processing \"$repo\" \"$name\";
-                    [ -d $name ] && (echo 'found. updating'; cd \"$name\"; git fetch)||(echo 'not found. clonning'; git clone --bare \"$repo\" \"$name\")
+                    [ -d $name ] && (echo 'found. updating'; cd \"$name\"; git fetch origin master:master)||(echo 'not found. clonning'; git clone --bare \"$repo\" \"$name\")
                   done </tmp/repos.txt;
                   [ -e /configmaps/ws ] && curl localhost:3000/sys/fetch_changesets?key=$(cat /configmaps/ws);
                   sleep 60;
