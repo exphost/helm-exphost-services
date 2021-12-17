@@ -11,17 +11,19 @@ v1.3.0:
 ```
     . /opt/bitnami/scripts/libredmine.sh
     if ! is_empty_value "$REDMINE_SMTP_HOST"; then
-        for empty_env_var in "REDMINE_SMTP_USER" "REDMINE_SMTP_PASSWORD"; do
-            is_empty_value "${!empty_env_var}" && warn "The ${empty_env_var} environment variable is empty or not set."
-        done
-        is_empty_value "$REDMINE_SMTP_PORT_NUMBER" && print_validation_error "The REDMINE_SMTP_PORT_NUMBER environment variable is empty or not set."
-        ! is_empty_value "$REDMINE_SMTP_PORT_NUMBER" && check_valid_port "REDMINE_SMTP_PORT_NUMBER"
-        check_multi_value "REDMINE_SMTP_AUTH" "plain login cram_md5"
-        if ! is_empty_value "${SMTP_AUTH:-}"; then
-            warn "The environment variable SMTP_TLS is set. This configuration will be deprecated soon. Please set REDMINE_PROTOCOL=tls to avoid errors in the future."
-            export REDMINE_SMTP_PROTOCOL="tls"
+        info "Configuring SMTP credentials"
+        redmine_conf_set "default.email_delivery.delivery_method" ":smtp"
+        redmine_conf_set "default.email_delivery.smtp_settings.address" "$REDMINE_SMTP_HOST"
+        redmine_conf_set "default.email_delivery.smtp_settings.port" "$REDMINE_SMTP_PORT_NUMBER"
+        redmine_conf_set "default.email_delivery.smtp_settings.authentication" "$REDMINE_SMTP_AUTH"
+        redmine_conf_set "default.email_delivery.smtp_settings.user_name" "$REDMINE_SMTP_USER"
+        redmine_conf_set "default.email_delivery.smtp_settings.password" "$REDMINE_SMTP_PASSWORD"
+        # Remove 'USER@' part from e-mail address and use as domain
+        redmine_conf_set "default.email_delivery.smtp_settings.domain" "${REDMINE_SMTP_USER//*@/}"
+        if [[ "$REDMINE_SMTP_PROTOCOL" = "tls" ]]; then
+            redmine_conf_set "default.email_delivery.smtp_settings.enable_starttls_auto" "true"
         else
-            ! is_empty_value "$REDMINE_SMTP_PROTOCOL" && check_multi_value "REDMINE_SMTP_PROTOCOL" "ssl tls"
+            redmine_conf_set "default.email_delivery.smtp_settings.enable_starttls_auto" "false"
         fi
-    fi    
+    fi
 ```
