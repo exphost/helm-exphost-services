@@ -40,10 +40,10 @@ spec:
         initContainers:
           - name: generate-ssh-key
             image: alpine
-            command: ['sh', '-c', 'mkdir /bitnami/redmine/repos; apk add openssh-keygen; [ -e /bitnami/redmine/repos/key ] && echo "key exists" || ssh-keygen -N "" -t rsa -f /bitnami/redmine/repos/key && cat /bitnami/redmine/repos/key.pub']
+            command: ['sh', '-c', 'apk add openssh-keygen; [ -e /repos/key ] && echo "key exists" || ssh-keygen -N "" -t rsa -f /repos/key && cat /repos/key.pub']
             volumeMounts:
-              - mountPath: /bitnami/redmine
-                name: redmine-data
+              - mountPath: /repos
+                name: redmine-repos
         sidecars:
           - name: git-updater
             image: alpine
@@ -51,8 +51,8 @@ spec:
               - sh
               - -c
               - "apk add jq yq git openssh-client curl;
-                cd /bitnami/redmine/repos;
-                export GIT_SSH_COMMAND='ssh -i /bitnami/redmine/repos/key -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null';
+                cd /repos;
+                export GIT_SSH_COMMAND='ssh -i /repos/key -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null';
                 while true; do
                   cat /configmaps/repos;
                   yq e -o=json  /configmaps/repos |jq -r '.[] | [.name, .repo] | @tsv' > /tmp/repos.txt;
@@ -64,14 +64,20 @@ spec:
                   sleep 60;
                 done"
             volumeMounts:
-              - mountPath: /bitnami/redmine
-                name: redmine-data
+              - mountPath: /repos
+                name: redmine-repos
               - mountPath: /configmaps
                 name: repo-configs
         extraVolumes:
           - name: repo-configs
             configMap:
               name: redmine-repos-configs
+          - name: redmine-repos
+            persistentVolumeClaim:
+              claimName: redmine-repos
+        extraVolumeMounts:
+          - mountPath: /repos
+            name: redmine-repos
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: tenant-exphost-services
