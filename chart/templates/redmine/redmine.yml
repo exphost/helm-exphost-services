@@ -60,7 +60,7 @@ spec:
                     echo processing \"$repo\" \"$name\";
                     [ -d $name ] && (echo 'found. updating'; cd \"$name\"; git fetch origin master:master)||(echo 'not found. clonning'; git clone --bare \"$repo\" \"$name\")
                   done </tmp/repos.txt;
-                  [ -e /configmaps/ws ] && curl localhost:3000/sys/fetch_changesets?key=$(cat /configmaps/ws);
+                  [ -e /configmaps/ws ] && (echo 'triggering refresh'; curl -s localhost:3000/sys/fetch_changesets?key=$(cat /configmaps/ws));
                   sleep 60;
                 done"
             volumeMounts:
