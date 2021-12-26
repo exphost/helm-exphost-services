@@ -4,6 +4,8 @@ metadata:
   name: password-usersservice
 spec:
   name: password-usersservice
+  copy_namespaces:
+  - tenant-exphost-controller
   types:
     - sha512
 ---
