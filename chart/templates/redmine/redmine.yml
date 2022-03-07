@@ -11,7 +11,7 @@ spec:
   project: tenant-exphost-services
   source:
     repoURL: 'https://charts.bitnami.com/bitnami'
-    targetRevision: 17.0.12
+    targetRevision: 18.0.2
     chart: redmine
     helm:
       values: |
