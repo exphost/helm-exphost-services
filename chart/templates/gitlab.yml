@@ -110,5 +110,4 @@ spec:
     automated:
       prune: true
     syncOptions:
-      - PruneLast=true
       - CreateNamespace=true
