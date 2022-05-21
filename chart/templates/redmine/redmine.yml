@@ -31,6 +31,11 @@ spec:
           auth:
             existingSecret: redmine-secrets
           existingSecret: redmine-secrets
+          persistence:
+            size: {{ .Values.redmine.persistence.size }}
+{{- if .Values.redmine.persistence.storageClass }}
+            storageClass: {{ .Values.redmine.persistence.storageClass }}
+{{- end }}
         redmineEmail: redmine@{{ .Values.domain }}
         smtpHost: smtp.{{ .Values.domain }}
         smtpPort: 587
@@ -78,6 +83,11 @@ spec:
         extraVolumeMounts:
           - mountPath: /repos
             name: redmine-repos
+        persistence:
+          size: {{ .Values.redmine.persistence.size }}
+{{- if .Values.redmine.persistence.storageClass }}
+          storageClass: {{ .Values.redmine.persistence.storageClass }}
+{{- end }}
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: tenant-exphost-services

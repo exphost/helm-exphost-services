@@ -20,3 +20,11 @@ gitlab:
     persistence:
       size: 8Gi
       # storageClass: class
+redmine:
+  persistence:
+    size: 8Gi
+    # storageClass: class
+  mariadb:
+    persistence:
+      size: 8Gi
+      # storageClass: class
