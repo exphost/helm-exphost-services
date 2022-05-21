@@ -11,7 +11,7 @@ spec:
   project: tenant-exphost-services
   source:
     repoURL: 'https://charts.gitlab.io/'
-    targetRevision: 5.8.2
+    targetRevision: 5.10.2
     chart: gitlab
     helm:
       values: |
