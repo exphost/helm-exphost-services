@@ -7,3 +7,16 @@ dovecot:
 redmine:
   ws: ""
   repos: ""
+gitlab:
+  gitaly:
+    persistence:
+      size: 30Gi
+      # storageClass: class
+  minio:
+    persistence:
+      size: 30Gi
+      # storageClass: class
+  postgresql:
+    persistence:
+      size: 8Gi
+      # storageClass: class

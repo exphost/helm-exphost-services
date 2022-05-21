@@ -7,6 +7,9 @@ stages:
   - upload
   - deploy
 
+upload:
+  extends: .upload
+
 deploy-to-dev:
   stage: deploy
   image: alpine
