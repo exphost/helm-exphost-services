@@ -67,6 +67,8 @@ spec:
           pages:
             enabled: True
             host: pages.gitlab.dev.exphost.pl
+          kas:
+            enabled: True
 
         gitlab:
           webservice:
@@ -84,6 +86,10 @@ spec:
               type: LoadBalancer
               annotations:
                 metallb.universe.tf/allow-shared-ip: ingress-ip
+          kas:
+            ingress:
+              tls:
+                secretName: moj-kas-tls
         registry:
           ingress:
             tls:
