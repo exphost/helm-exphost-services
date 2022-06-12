@@ -60,7 +60,7 @@ spec:
             image: alpine
             command:
               - sh
-              - -c
+              - -ce
               - "apk add jq yq git openssh-client curl;
                 cd /repos;
                 export GIT_SSH_COMMAND='ssh -i /repos/key -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null';
