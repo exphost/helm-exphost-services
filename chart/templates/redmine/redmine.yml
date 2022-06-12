@@ -49,6 +49,12 @@ spec:
             volumeMounts:
               - mountPath: /repos
                 name: redmine-repos
+          - name: theme-farend-blueclair
+            image: alpine
+            command: ['sh', '-c', 'apk add git; git clone -b redmine4.2  https://github.com/farend/redmine_theme_farend_bleuclair.git /themes/']
+            volumeMounts:
+              - mountPath: /themes
+                name: theme-farend-blueclair
         sidecars:
           - name: git-updater
             image: alpine
@@ -80,9 +86,13 @@ spec:
           - name: redmine-repos
             persistentVolumeClaim:
               claimName: redmine-repos
+          - name: theme-farend-blueclair
+            emptyDir: {}
         extraVolumeMounts:
           - mountPath: /repos
             name: redmine-repos
+          - mountPath: /opt/bitnami/redmine/public/themes/theme-farend-blueclair
+            name: theme-farend-blueclair
         persistence:
           size: {{ .Values.redmine.persistence.size }}
 {{- if .Values.redmine.persistence.storageClass }}
