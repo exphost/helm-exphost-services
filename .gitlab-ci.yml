@@ -5,13 +5,14 @@ include:
 stages:
   - checks
   - upload
-  - deploy
+  - deploy-to-dev
+  - deploy-to-prod
 
 upload:
   extends: .upload
 
 deploy-to-dev:
-  stage: deploy
+  stage: deploy-to-dev
   image: alpine
   extends: .deploy-to-git-mainapp
   environment:
@@ -21,3 +22,15 @@ deploy-to-dev:
     yamlfile: exphost-services.yml
 #    waitapp: tenant-exphost-services-exphost-services
 #    refreshapp: tenant-exphost-services
+
+deploy-to-prod:
+  stage: deploy-to-prod
+  extends: .deploy-to-git-mainapp
+  environment:
+    name: prod
+  variables:
+    repo: git@gitlab.home.exphost.pl:exphost/tenant-exphost-services-prod1.git
+    yamlfile: exphost-services.yml
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]$/' #accept v1.2.3 and not v1.2.3-rc4
+      when: manual
